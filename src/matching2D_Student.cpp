@@ -101,3 +101,74 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
         cv::waitKey(0);
     }
 }
+
+//Harris KeyPoint Detector
+void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis)
+{
+    //detector params
+    int blockSize{2};     //blocksize neighborhood
+    int apertureSize{3};  //for sobel operator
+    int minResponse{100}; //min value for a corner
+    double k{0.04};       //Harris param
+
+    //detect Harris corners
+    cv::Mat dst;
+    dst = cv::Mat::zeros(img.size(), CV_32FC1);
+    double t = (double)cv::getTickCount();
+    cv::cornerHarris(img, dst, blockSize, apertureSize, k, cv::BORDER_DEFAULT);
+
+    //normalize output
+    cv::Mat dst_norm, dst_norm_scaled;
+    cv::normalize(dst, dst_norm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat());
+    cv::convertScaleAbs(dst_norm, dst_norm_scaled);
+
+    //Use non maximum supression to find the keypoints
+    double maxOverlap = 0.0;
+    for (size_t row = 0; row < dst_norm.rows; row++)
+    {
+        for (size_t col = 0; col < dst_norm.cols; col++)
+        {
+            int response = static_cast<int>(dst_norm.at<float>(row, col));
+            if (response > minResponse)
+            {
+                cv::KeyPoint newKeyPoint;
+                newKeyPoint.pt = cv::Point2f(col, row); //row, col inverted here. columns align on x axis, rows on y axis
+                newKeyPoint.size = 2 * apertureSize;
+                newKeyPoint.response = response;
+
+                bool bOverlap = false;
+                for (auto it = keypoints.begin(); it != keypoints.end(); ++it)
+                {
+                    double kptOverlap = cv::KeyPoint::overlap(newKeyPoint, *it);
+                    if (kptOverlap > maxOverlap)
+                    {
+                        bOverlap = true;
+                        if (newKeyPoint.response > (*it).response)
+                        {
+                            *it = newKeyPoint;
+                            break;
+                        }
+                    }
+                }
+                if (!bOverlap)
+                {
+                    keypoints.push_back(newKeyPoint);
+                }
+            }
+        }
+    }
+
+    t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+    cout << "Harris detection with n=" << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+
+    // visualize results
+    if (bVis)
+    {
+        cv::Mat visImage = img.clone();
+        cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        string windowName = "Harris Corner Detector Results";
+        cv::namedWindow(windowName, 6);
+        imshow(windowName, visImage);
+        cv::waitKey(0);
+    }
+}
