@@ -58,7 +58,7 @@ int main(int argc, const char *argv[])
         cv::cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
 
         //// STUDENT ASSIGNMENT
-        //// TASK MP.1 -> replace the following code with ring buffer of size dataBufferSize
+        //// DONE TASK MP.1 -> replace the following code with ring buffer of size dataBufferSize
 
         // push image into data frame buffer
         DataFrame frame;
@@ -76,11 +76,10 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        // string detectorType = "SHITOMASI";
         string detectorType = "SIFT";
 
         //// STUDENT ASSIGNMENT
-        //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
+        //// DONE TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
         //// -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
 
         if (detectorType.compare("SHITOMASI") == 0)
@@ -98,16 +97,20 @@ int main(int argc, const char *argv[])
         //// EOF STUDENT ASSIGNMENT
 
         //// STUDENT ASSIGNMENT
-        //// TASK MP.3 -> only keep keypoints on the preceding vehicle
+        //// DONE TASK MP.3 -> only keep keypoints on the preceding vehicle
 
         // only keep keypoints on the preceding vehicle
+        //std::cout << "Keypoints before : " << keypoints.size() << "\n";
         bool bFocusOnVehicle = true;
         cv::Rect vehicleRect(535, 180, 180, 150);
         if (bFocusOnVehicle)
         {
-            // ...
+            auto to_remove = std::remove_if(keypoints.begin(), keypoints.end(), [&](cv::KeyPoint point) {
+                return !vehicleRect.contains(point.pt);
+            });
+            keypoints.erase(to_remove, keypoints.end());
         }
-
+        //std::cout << "Keypoints after : " << keypoints.size() << "\n";
         //// EOF STUDENT ASSIGNMENT
 
         // optional : limit number of keypoints (helpful for debugging and learning)
