@@ -172,3 +172,83 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
         cv::waitKey(0);
     }
 }
+
+//Modern Keypoint Detectors - FAST, BRISK, ORB, AKAZE, SIFT
+void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std::string detectorType, bool bVis)
+{
+    string windowName = "";
+
+    //FAST detector
+    if (detectorType.compare("FAST") == 0)
+    {
+        int threshold = 30;
+        bool bNMS = true;                                                                // perform non-maxima suppression on keypoints
+        cv::FastFeatureDetector::DetectorType type = cv::FastFeatureDetector::TYPE_9_16; // TYPE_9_16, TYPE_7_12, TYPE_5_8
+        cv::Ptr<cv::FeatureDetector> detector = cv::FastFeatureDetector::create(threshold, bNMS, type);
+
+        double t = (double)cv::getTickCount();
+        detector->detect(img, keypoints);
+        t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+        cout << "FAST detection with n= " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+
+        windowName = "FAST Corner Detector Results";
+    }
+
+    //BRISK detector
+    else if (detectorType.compare("BRISK") == 0)
+    {
+        int thresh = 30;           //FAST/AGAST detection threshold score.
+        int octaves = 0;           //detection octaves. Use 0 to do single scale.
+        float patternScale = 1.0f; //apply this scale to the pattern used for sampling the neighbourhood of a keypoint.
+        cv::Ptr<cv::FeatureDetector> detector = cv::BRISK::create(thresh, octaves, patternScale);
+        double t = (double)cv::getTickCount();
+        detector->detect(img, keypoints);
+        t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+        cout << "BRISK detection with n= " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+
+        windowName = "BRISK Corner Detector Results";
+    }
+
+    else if (detectorType.compare("ORB") == 0)
+    {
+        cv::Ptr<cv::FeatureDetector> detector = cv::ORB::create();
+        double t = (double)cv::getTickCount();
+        detector->detect(img, keypoints);
+        t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+        cout << "ORB detection with n= " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+
+        windowName = "ORB Corner Detector Results";
+    }
+
+    else if (detectorType.compare("AKAZE") == 0)
+    {
+        cv::Ptr<cv::FeatureDetector> detector = cv::AKAZE::create();
+        double t = (double)cv::getTickCount();
+        detector->detect(img, keypoints);
+        t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+        cout << "AKAZE detection with n= " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+
+        windowName = "AKAZE Corner Detector Results";
+    }
+
+    else if (detectorType.compare("SIFT") == 0)
+    {
+        cv::Ptr<cv::FeatureDetector> detector = cv::xfeatures2d::SIFT::create();
+        double t = (double)cv::getTickCount();
+        detector->detect(img, keypoints);
+        t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+        cout << "SIFT detector with n= " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+
+        windowName = "SIFT Corner Detector Results";
+    }
+
+    // visualize results
+    if (bVis)
+    {
+        cv::Mat visImage = img.clone();
+        cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        cv::namedWindow(windowName, 6);
+        imshow(windowName, visImage);
+        cv::waitKey(0);
+    }
+}
