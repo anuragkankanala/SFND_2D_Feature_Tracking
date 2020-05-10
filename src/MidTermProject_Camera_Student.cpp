@@ -12,6 +12,7 @@
 #include <opencv2/features2d.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/xfeatures2d/nonfree.hpp>
+#include <deque>
 
 #include "dataStructures.h"
 #include "matching2D.hpp"
@@ -36,9 +37,9 @@ int main(int argc, const char *argv[])
     int imgFillWidth = 4;  // no. of digits which make up the file index (e.g. img-0001.png)
 
     // misc
-    int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
-    vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
-    bool bVis = false;            // visualize results
+    int dataBufferSize = 2;      // no. of images which are held in memory (ring buffer) at the same time
+    deque<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
+    bool bVis = false;           // visualize results
 
     /* MAIN LOOP OVER ALL IMAGES */
 
@@ -62,6 +63,10 @@ int main(int argc, const char *argv[])
         // push image into data frame buffer
         DataFrame frame;
         frame.cameraImg = imgGray;
+        if (dataBuffer.size() == dataBufferSize)
+        {
+            dataBuffer.pop_front();
+        }
         dataBuffer.push_back(frame);
 
         //// EOF STUDENT ASSIGNMENT
