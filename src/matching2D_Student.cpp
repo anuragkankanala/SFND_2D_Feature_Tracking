@@ -48,10 +48,29 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
 
         extractor = cv::BRISK::create(threshold, octaves, patternScale);
     }
-    else
+    else if (descriptorType.compare("BRIEF") == 0)
     {
+        extractor = cv::xfeatures2d::BriefDescriptorExtractor::create();
+    }
 
-        //...
+    else if (descriptorType.compare("ORB") == 0)
+    {
+        extractor = cv::ORB::create();
+    }
+
+    else if (descriptorType.compare("FREAK") == 0)
+    {
+        extractor = cv::xfeatures2d::FREAK::create();
+    }
+
+    else if (descriptorType.compare("AKAZE") == 0)
+    {
+        extractor = cv::AKAZE::create();
+    }
+
+    else if (descriptorType.compare("SIFT") == 0)
+    {
+        extractor = cv::xfeatures2d::SIFT::create();
     }
 
     // perform feature description
@@ -198,7 +217,7 @@ void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std:
     else if (detectorType.compare("BRISK") == 0)
     {
         int thresh = 30;           //FAST/AGAST detection threshold score.
-        int octaves = 0;           //detection octaves. Use 0 to do single scale.
+        int octaves = 3;           //detection octaves. Use 0 to do single scale.
         float patternScale = 1.0f; //apply this scale to the pattern used for sampling the neighbourhood of a keypoint.
         cv::Ptr<cv::FeatureDetector> detector = cv::BRISK::create(thresh, octaves, patternScale);
         double t = (double)cv::getTickCount();
